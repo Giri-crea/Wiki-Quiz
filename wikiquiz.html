@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WikiQuiz Web Page</title>
+    <style>
+        :root {
+            --bg: #07111f;
+            --panel: rgba(10, 22, 39, 0.92);
+            --text: #f4f7ff;
+            --muted: #9fb4cb;
+            --accent: #57d4c7;
+            --accent-2: #5b7cff;
+            --border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: radial-gradient(circle at top, rgba(87,212,199,0.16), transparent 25%),
+                        linear-gradient(135deg, #081220 0%, #0d1b2e 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 24px;
+        }
+        .page {
+            max-width: 980px;
+            margin: 0 auto;
+            display: grid;
+            gap: 24px;
+        }
+        .card {
+            background: rgba(11, 20, 36, 0.95);
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 28px;
+            padding: 28px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.28);
+            -webkit-backdrop-filter: blur(14px);
+            backdrop-filter: blur(14px);
+        }
+        h1, h2 {
+            margin-top: 0;
+            color: var(--text);
+        }
+        p {
+            color: var(--muted);
+            margin: 0;
+        }
+        .button-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: #04111f;
+            border: none;
+            padding: 14px 22px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.18);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+        .button-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 22px rgba(0,0,0,0.22);
+        }
+        .button-primary:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .home-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        .hero {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        .hero-actions,
+        .quiz-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .hero h1 {
+            font-size: clamp(1.9rem, 2.2vw, 2.7rem);
+            line-height: 1.05;
+        }
+        .quiz-animation {
+            border-radius: 18px;
+            background: rgba(87,212,199,0.08);
+            padding: 18px 20px;
+            border: 1px solid rgba(87,212,199,0.18);
+        }
+        .pill {
+            display: inline-block;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(87,212,199,0.14);
+            color: var(--accent);
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .question {
+            margin-bottom: 22px;
+            padding: 22px;
+            border-radius: 24px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .question-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #f8fbff;
+        }
+        .question label {
+            display: block;
+            margin: 10px 0 0;
+            color: var(--text);
+            padding: 14px 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+            cursor: pointer;
+            background: rgba(255,255,255,0.04);
+        }
+        .question label:hover {
+            background: rgba(87,212,199,0.14);
+            border-color: rgba(87,212,199,0.28);
+            transform: translateY(-1px);
+        }
+        .question label.correct {
+            background: rgba(86, 214, 200, 0.18);
+            border-color: rgba(86, 214, 200, 0.6);
+            color: #04111f;
+        }
+        .question label.incorrect {
+            background: rgba(255, 120, 120, 0.18);
+            border-color: rgba(255, 120, 120, 0.6);
+            color: #f8f8f8;
+        }
+        .quiz-progress {
+            margin: 16px 0 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            color: var(--text);
+            font-weight: 600;
+        }
+        .quiz-progress-bar {
+            flex: 1;
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.08);
+            overflow: hidden;
+        }
+        .quiz-progress-fill {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            border-radius: 999px;
+            transition: width 0.25s ease;
+        }
+        .quiz-feedback {
+            margin: 16px 0 0;
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: var(--text);
+        }
+        .quiz-controls {
+            display: grid;
+            gap: 14px;
+            width: 100%;
+        }
+        .quiz-controls input[type="text"],
+        .quiz-controls input[type="password"],
+        .quiz-controls select {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.06);
+            color: var(--text);
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+        .quiz-controls input[type="text"]:focus,
+        .quiz-controls input[type="password"]:focus,
+        .quiz-controls select:focus {
+            border-color: rgba(87,212,199,0.65);
+            box-shadow: 0 0 0 4px rgba(87,212,199,0.12);
+        }
+        .difficulty-select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        .hidden-card {
+            display: none;
+        }
+        .question label.selected {
+            background: rgba(87,212,199,0.16);
+            color: var(--text);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px rgba(87,212,199,0.28) inset;
+        }
+        .result {
+            font-weight: bold;
+            margin-top: 16px;
+            color: var(--accent);
+        }
+        .result-card {
+            margin-top: 18px;
+            padding: 18px;
+            border-radius: 16px;
+            background: rgba(87,212,199,0.10);
+            border: 1px solid rgba(87,212,199,0.24);
+            display: none;
+        }
+        .result-card h3 {
+            margin: 0 0 8px;
+            color: var(--accent);
+        }
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 18px;
+        }
+        .project-item {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text);
+            text-decoration: none;
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+        .project-item:hover {
+            background: rgba(87, 212, 199, 0.16);
+            transform: translateY(-1px);
+        }
+        .locked-note {
+            color: var(--accent);
+            font-size: 0.95rem;
+            margin-top: 6px;
+        }
+        .status {
+            color: var(--muted);
+            margin-top: 12px;
+            min-height: 1.45em;
+        }
+        .page-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.08);
+            margin: 28px 0;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 12px;
+            font-size: 16px;
+            background: rgba(255,255,255,0.06);
+            color: var(--text);
+        }
+        a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        @media (max-width: 700px) {
+            body { padding: 14px; }
+            .card { padding: 18px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="card">
+            <div class="hero">
+                <span class="pill">Wiki Quiz</span>
+                <h1>Learn something new from Wikipedia</h1>
+            </div>
+            <p>Enter a topic and this page will search Wikipedia, pick the best matching article, and generate a fresh quiz from it.</p>
+            <div id="signInCard" class="card">
+                <h2>Sign In</h2>
+                <p>Enter your credentials to access the quiz generator.</p>
+                <div class="quiz-controls">
+                    <input id="usernameInput" type="text" placeholder="Username">
+                    <input id="passwordInput" type="password" placeholder="Password">
+                </div>
+                <div class="hero">
+                    <button class="button-primary" onclick="signIn()">Sign In</button>
+                    <a class="button-primary home-link" href="index.html">Back to Home</a>
+                </div>
+                <div id="authMessage" class="status"></div>
+            </div>
+            <div id="quizControlsContainer" class="quiz-controls hidden-card">
+                <input id="topicInput" type="text" placeholder="Example: Java, India, Internet">
+                <select id="difficultyInput" class="difficulty-select" title="Difficulty level" aria-label="Difficulty level">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+            <div class="hero hero-actions hidden-card" id="quizActions">
+                <button class="button-primary" onclick="loadQuiz()">Load Quiz</button>
+                <button class="button-primary" onclick="signOut()">Sign Out</button>
+            </div>
+            <div id="signedInUserInfo" class="status"></div>
+        <div id="status" class="status"></div>
+        </div>
+
+        <div id="summaryCard" class="card hidden-card">
+            <h2>Wikipedia Summary</h2>
+            <p id="summaryText"></p>
+            <a id="wikiLink" href="#" target="_blank">Read more on Wikipedia</a>
+        </div>
+
+        <div id="quizCard" class="card hidden-card">
+            <h2>Quiz Questions</h2>
+            <div id="quizProgress" class="quiz-progress hidden-card">
+                <span id="quizProgressText">Progress: 0 / 5</span>
+                <div class="quiz-progress-bar"><div id="quizProgressFill" class="quiz-progress-fill"></div></div>
+            </div>
+            <div id="questions"></div>
+            <div id="quizFeedback" class="quiz-feedback hidden-card"></div>
+            <div class="quiz-actions">
+                <button class="button-primary" onclick="submitAnswers()">Submit Answers</button>
+                <button class="button-primary" onclick="resetQuiz()">Retry Quiz</button>
+            </div>
+            <div id="score" class="result"></div>
+        </div>
+
+        <div id="resultCard" class="result-card">
+            <h3 id="resultTitle">Your Score</h3>
+            <div id="resultMessage">Complete the quiz to see your score.</div>
+        </div>
+
+    </div>
+
+    <script>
+        let quizData = [];
+        const QUIZ_HISTORY_KEY = 'wikiquiz-question-history-v1';
+        const ARTICLE_CACHE_KEY = 'wikiquiz-article-cache-v1';
+        const USER_SESSION_KEY = 'wikiquiz-user-session-v1';
+
+        function getStoredQuestionHistory() {
+            try {
+                const raw = localStorage.getItem(QUIZ_HISTORY_KEY);
+                return raw ? JSON.parse(raw) : {};
+            } catch (error) {
+                console.warn('Unable to read quiz history.', error);
+                return {};
+            }
+        }
+
+        function saveQuestionHistory(history) {
+            try {
+                localStorage.setItem(QUIZ_HISTORY_KEY, JSON.stringify(history));
+            } catch (error) {
+                console.warn('Unable to save quiz history.', error);
+            }
+        }
+
+        function getSignedInUser() {
+            try {
+                const raw = localStorage.getItem(USER_SESSION_KEY);
+                return raw ? JSON.parse(raw) : null;
+            } catch (error) {
+                console.warn('Unable to read user session.', error);
+                return null;
+            }
+        }
+
+        function saveSignedInUser(user) {
+            try {
+                localStorage.setItem(USER_SESSION_KEY, JSON.stringify(user));
+            } catch (error) {
+                console.warn('Unable to save user session.', error);
+            }
+        }
+
+        function clearSignedInUser() {
+            try {
+                localStorage.removeItem(USER_SESSION_KEY);
+            } catch (error) {
+                console.warn('Unable to clear user session.', error);
+            }
+        }
+
+        function updateAuthUi() {
+            const user = getSignedInUser();
+            const signInCard = document.getElementById('signInCard');
+            const quizControls = document.getElementById('quizControlsContainer');
+            const quizActions = document.getElementById('quizActions');
+            const signedInUserInfo = document.getElementById('signedInUserInfo');
+            if (user) {
+                signInCard.style.display = 'none';
+                quizControls.classList.remove('hidden-card');
+                quizActions.classList.remove('hidden-card');
+                signedInUserInfo.textContent = `Signed in as ${user.username}`;
+            } else {
+                signInCard.style.display = 'block';
+                quizControls.classList.add('hidden-card');
+                quizActions.classList.add('hidden-card');
+                signedInUserInfo.textContent = '';
+            }
+        }
+
+        function signIn() {
+            const username = document.getElementById('usernameInput').value.trim();
+            const password = document.getElementById('passwordInput').value.trim();
+            const authMessage = document.getElementById('authMessage');
+            if (!username || !password) {
+                authMessage.textContent = 'Please enter both username and password.';
+                return;
+            }
+            saveSignedInUser({ username, signedInAt: Date.now() });
+            document.getElementById('passwordInput').value = '';
+            authMessage.textContent = `Welcome back, ${username}! Your sign in is saved.`;
+            updateAuthUi();
+        }
+
+        function signOut() {
+            clearSignedInUser();
+            document.getElementById('authMessage').textContent = 'You have signed out.';
+            updateAuthUi();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateAuthUi();
+            const user = getSignedInUser();
+            if (user) {
+                document.getElementById('authMessage').textContent = `Welcome back, ${user.username}! You are still signed in.`;
+                document.getElementById('usernameInput').value = user.username;
+            }
+        });
+
+        function getDifficultyConfig(difficulty) {
+            switch (difficulty) {
+                case 'hard':
+                    return {
+                        minLength: 70,
+                        promptTemplates: [
+                            'Which term best completes the sentence? ',
+                            'Identify the missing word in the sentence. ',
+                            'Fill in the blank: '
+                        ]
+                    };
+                case 'easy':
+                    return {
+                        minLength: 30,
+                        promptTemplates: [
+                            'Complete the sentence by choosing the best word. ',
+                            'Fill in the blank: ',
+                            'Which word best completes the sentence? '
+                        ]
+                    };
+                default:
+                    return {
+                        minLength: 45,
+                        promptTemplates: [
+                            'Complete the sentence: ',
+                            'Fill in the blank: ',
+                            'Which word best completes the sentence? '
+                        ]
+                    };
+            }
+        }
+
+        function getTopicWords(topic = '') {
+            return (topic || '')
+                .split(/\s+/)
+                .map(word => word.replace(/[^A-Za-z0-9]/g, ''))
+                .filter(word => word && word.length > 2);
+        }
+
+        function escapeRegExp(value) {
+            return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        const STOP_WORDS = new Set([
+            'about','above','after','again','against','among','around','because','before','below','between','both','could','during','each','every','first','from','have','having','including','into','other','over','should','since','through','under','until','while','which','where','their','there','these','those','would'
+        ]);
+
+        function isValidAnswerToken(token) {
+            const lower = token.toLowerCase();
+            if (token.length < 5) return false;
+            if (STOP_WORDS.has(lower)) return false;
+            if (/^\d+$/.test(token)) return false;
+            return /^[A-Za-z][A-Za-z0-9']*$/.test(token);
+        }
+
+        function getCachedArticle(topic) {
+            try {
+                const raw = localStorage.getItem(`${ARTICLE_CACHE_KEY}:${topic.toLowerCase()}`);
+                return raw ? JSON.parse(raw) : null;
+            } catch (error) {
+                console.warn('Unable to read article cache.', error);
+                return null;
+            }
+        }
+
+        function saveCachedArticle(topic, payload) {
+            try {
+                localStorage.setItem(`${ARTICLE_CACHE_KEY}:${topic.toLowerCase()}`, JSON.stringify(payload));
+            } catch (error) {
+                console.warn('Unable to save article cache.', error);
+            }
+        }
+
+        async function fetchJson(url, timeoutMs = 7000) {
+            const controller = new AbortController();
+            const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                const response = await fetch(url, { signal: controller.signal, cache: 'force-cache' });
+                const contentType = response.headers.get('content-type') || '';
+                const text = await response.text();
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status} fetching ${url}`);
+                }
+                if (!contentType.includes('application/json')) {
+                    throw new Error(`Expected JSON from ${url} but received ${contentType}. Response start: ${text.slice(0, 120)}`);
+                }
+                try {
+                    return JSON.parse(text);
+                } catch (error) {
+                    throw new Error(`JSON parse failed for ${url}: ${error.message}. Response start: ${text.slice(0, 120)}`);
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    throw new Error('Request timed out while fetching Wikipedia data.');
+                }
+                throw error;
+            } finally {
+                window.clearTimeout(timer);
+            }
+        }
+
+        function getAnswerWord(sentence, topicWords) {
+            const normalizedTopicWords = topicWords.map(word => word.toLowerCase());
+            const tokens = (sentence.match(/\b[A-Za-z][A-Za-z0-9'-]{4,}\b/g) || [])
+                .map(word => word.replace(/['-]/g, ' '))
+                .flatMap(word => word.split(' '))
+                .map(word => word.trim())
+                .filter(isValidAnswerToken);
+
+            const topicMatch = tokens.find(token => normalizedTopicWords.includes(token.toLowerCase()));
+            if (topicMatch) {
+                return topicMatch;
+            }
+
+            const properNouns = tokens.filter(token => token[0] === token[0].toUpperCase());
+            if (properNouns.length) {
+                return properNouns[0];
+            }
+
+            tokens.sort((a, b) => b.length - a.length);
+            return tokens[0] || null;
+        }
+
+        function buildPrompt(sentence, answer, config) {
+            const template = config.promptTemplates[Math.floor(Math.random() * config.promptTemplates.length)];
+            const answerPattern = new RegExp(`\\b${escapeRegExp(answer)}\\b`, 'i');
+            const blanked = sentence.replace(answerPattern, '____');
+            if (blanked !== sentence) {
+                return `${template}${blanked}`;
+            }
+            return `${template}${sentence}`;
+        }
+        function normalizeWikiTitle(value) {
+            return (value || '')
+                .trim()
+                .replace(/[_-]+/g, ' ')
+                .replace(/\s+/g, ' ')
+                .toLowerCase();
+        }
+
+        function titleMatchScore(topic, title) {
+            const normalizedTopic = normalizeWikiTitle(topic);
+            const normalizedTitle = normalizeWikiTitle(title);
+            if (normalizedTopic === normalizedTitle) {
+                return 1;
+            }
+            const topicWords = normalizedTopic.split(' ').filter(Boolean);
+            const titleWords = new Set(normalizedTitle.split(' ').filter(Boolean));
+            const shared = topicWords.filter(word => titleWords.has(word)).length;
+            return topicWords.length ? shared / topicWords.length : 0;
+        }
+
+        function selectWikiTitle(topic, titles) {
+            const normalizedTopic = normalizeWikiTitle(topic);
+            const exact = titles.find(title => normalizeWikiTitle(title) === normalizedTopic);
+            if (exact) {
+                return exact;
+            }
+            if (topic.trim().split(/\s+/).length > 1) {
+                const scored = titles
+                    .map(title => ({ title, score: titleMatchScore(topic, title) }))
+                    .sort((a, b) => b.score - a.score);
+                if (scored.length && scored[0].score >= 0.8) {
+                    return scored[0].title;
+                }
+                return null;
+            }
+            return titles[0] || null;
+        }
+        function buildQuestionId(topic, difficulty, sentence, sentenceIndex) {
+            const normalizedTopic = (topic || 'topic').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            const normalizedSentence = sentence.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40);
+            return `${normalizedTopic}-${difficulty}-${sentenceIndex}-${normalizedSentence}`;
+        }
+
+        function shuffle(items) {
+            const copy = [...items];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+
+        function buildOptions(answer, topicWords, sentence, config) {
+            const options = [answer];
+            const sentenceTokens = (sentence.match(/\b[A-Za-z][A-Za-z0-9'-]{4,}\b/g) || [])
+                .map(word => word.replace(/['-]/g, ' '))
+                .flatMap(word => word.split(' '))
+                .map(word => word.trim())
+                .filter(token => token.toLowerCase() !== answer.toLowerCase())
+                .filter(isValidAnswerToken);
+
+            const uniqueTokens = [...new Set(sentenceTokens)];
+            uniqueTokens.forEach(token => {
+                if (options.length >= 4) return;
+                if (!options.some(option => option.toLowerCase() === token.toLowerCase())) {
+                    options.push(token);
+                }
+            });
+
+            const extraWords = topicWords
+                .map(word => word.trim())
+                .filter(word => word && word.toLowerCase() !== answer.toLowerCase());
+            extraWords.forEach(word => {
+                if (options.length >= 4) return;
+                if (!options.some(option => option.toLowerCase() === word.toLowerCase())) {
+                    options.push(word);
+                }
+            });
+
+            while (options.length < 4) {
+                const fallback = `${answer}${Math.floor(Math.random() * 90) + 10}`;
+                if (!options.includes(fallback)) {
+                    options.push(fallback);
+                }
+            }
+
+            return shuffle(options);
+        }
+
+        async function loadQuiz() {
+            const topic = document.getElementById('topicInput').value.trim();
+            const difficulty = document.getElementById('difficultyInput').value;
+            const status = document.getElementById('status');
+            const summaryCard = document.getElementById('summaryCard');
+            const quizCard = document.getElementById('quizCard');
+            const questionsDiv = document.getElementById('questions');
+            const scoreDiv = document.getElementById('score');
+            const resultCard = document.getElementById('resultCard');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultMessage = document.getElementById('resultMessage');
+
+            status.textContent = '';
+            summaryCard.style.display = 'none';
+            quizCard.style.display = 'none';
+            resultCard.style.display = 'none';
+            questionsDiv.innerHTML = '';
+            scoreDiv.textContent = '';
+            resultTitle.textContent = 'Your Score';
+            resultMessage.textContent = 'Complete the quiz to see your score.';
+            quizData = [];
+
+            const requestedCount = 5;
+            if (!getSignedInUser()) {
+                status.textContent = 'Please sign in before loading the quiz.';
+                return;
+            }
+            if (!topic) {
+                status.textContent = 'Please enter a topic first.';
+                return;
+            }
+
+            status.textContent = 'Searching Wikipedia...';
+            try {
+                const normalizedTopic = topic.trim().toLowerCase();
+                const cachedArticle = getCachedArticle(normalizedTopic);
+                let matchedTitle = cachedArticle?.title || topic.trim().replace(/\s+/g, '_').replace(/_/g, ' ');
+                let text = cachedArticle?.text || '';
+
+                async function fetchArticleText(title) {
+                    const encoded = encodeURIComponent(title.replace(/ /g, '_'));
+                    try {
+                        const summaryData = await fetchJson(`https://en.wikipedia.org/api/rest_v1/page/summary/${encoded}`);
+                        return summaryData.extract || summaryData.description || '';
+                    } catch (summaryError) {
+                        console.warn('Summary fetch failed for', title, summaryError.message);
+                    }
+                    try {
+                        const queryData = await fetchJson(`https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=true&redirects=true&titles=${encoded}&format=json&origin=*`, 5000);
+                        const pages = queryData.query && queryData.query.pages;
+                        const pageId = Object.keys(pages || {})[0];
+                        return pages && pages[pageId] && pages[pageId].extract ? pages[pageId].extract : '';
+                    } catch (queryError) {
+                        console.warn('Query extract failed for', title, queryError.message);
+                    }
+                    return '';
+                }
+
+                async function searchRelatedTitles(topicText) {
+                    const encodedTopic = encodeURIComponent(topicText);
+                    const queryUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodedTopic}&srlimit=8&format=json&origin=*`;
+                    const queryData = await fetchJson(queryUrl, 5000);
+                    return queryData.query && queryData.query.search
+                        ? queryData.query.search.map(item => item.title)
+                        : [];
+                }
+
+                if (!text) {
+                    text = await fetchArticleText(matchedTitle);
+                }
+
+                if (!text) {
+                    const titles = await searchRelatedTitles(topic);
+                    const selected = selectWikiTitle(topic, titles);
+                    if (selected) {
+                        matchedTitle = selected;
+                        text = await fetchArticleText(selected);
+                    }
+                }
+
+                if (!text) {
+                    const fallbackTitles = await searchRelatedTitles(topic + ' Wikipedia');
+                    const selectedFallback = selectWikiTitle(topic, fallbackTitles) || fallbackTitles[0];
+                    if (selectedFallback) {
+                        matchedTitle = selectedFallback;
+                        text = await fetchArticleText(selectedFallback);
+                    }
+                }
+
+                if (!text) {
+                    status.textContent = 'No article found for that topic. Try another one.';
+                    return;
+                }
+
+                const encodedTitle = encodeURIComponent(matchedTitle.replace(/ /g, '_'));
+                const cleanText = text.replace(/\s+/g, ' ').trim();
+                const config = getDifficultyConfig(difficulty);
+                const sentenceCount = cleanText.split(/[.!?]+/)
+                    .map(s => s.trim())
+                    .filter(s => s.length >= config.minLength)
+                    .length;
+
+                let finalText = cleanText;
+                if (requestedCount > sentenceCount && sentenceCount < 10) {
+                    const fullTextUrl = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=true&redirects=true&titles=${encodedTitle}&origin=*`;
+                    try {
+                        const fullTextData = await fetchJson(fullTextUrl, 7000);
+                        const pages = fullTextData.query && fullTextData.query.pages;
+                        const pageId = Object.keys(pages || {})[0];
+                        const fullExtract = pages && pages[pageId] && pages[pageId].extract ? pages[pageId].extract : '';
+                        if (fullExtract) {
+                            finalText = fullExtract.replace(/\s+/g, ' ').trim();
+                        }
+                    } catch (fullTextError) {
+                        console.warn('Full extract fetch failed:', fullTextError.message);
+                    }
+                }
+
+                saveCachedArticle(normalizedTopic, { title: matchedTitle, text: finalText });
+
+                document.getElementById('summaryText').textContent = finalText;
+                document.getElementById('wikiLink').href = `https://en.wikipedia.org/wiki/${encodedTitle}`;
+                summaryCard.style.display = 'block';
+                status.textContent = `Using Wikipedia article: ${matchedTitle} (${difficulty} difficulty)`;
+
+                quizData = generateQuiz(finalText, requestedCount, matchedTitle, difficulty);
+                if (quizData.length === 0) {
+                    status.textContent = 'Could not generate quiz questions from this topic.';
+                    return;
+                }
+
+                document.getElementById('quizFeedback').classList.add('hidden-card');
+                document.getElementById('quizProgress').classList.remove('hidden-card');
+                updateQuizProgress();
+
+                quizData.forEach((item, index) => {
+                    const container = document.createElement('div');
+                    container.className = 'question';
+                    const questionTitle = document.createElement('div');
+                    questionTitle.className = 'question-title';
+                    questionTitle.textContent = `Question ${index + 1}: ${item.prompt}`;
+                    container.appendChild(questionTitle);
+
+                    item.options.forEach((option, optionIndex) => {
+                        const optionId = `q${index}_${optionIndex}`;
+                        const label = document.createElement('label');
+                        label.htmlFor = optionId;
+                        const radio = document.createElement('input');
+                        radio.type = 'radio';
+                        radio.name = `question_${index}`;
+                        radio.id = optionId;
+                        radio.value = optionIndex;
+                        radio.addEventListener('change', () => {
+                            const group = document.querySelectorAll(`input[name="question_${index}"]`);
+                            const correctIndex = item.correctIndex;
+                            group.forEach(input => {
+                                input.disabled = true;
+                                const parentLabel = input.closest('label');
+                                parentLabel.classList.remove('correct', 'incorrect', 'selected');
+                                if (Number(input.value) === correctIndex) {
+                                    parentLabel.classList.add('correct');
+                                }
+                                if (input === radio) {
+                                    input.checked = true;
+                                    if (Number(input.value) !== correctIndex) {
+                                        parentLabel.classList.add('incorrect');
+                                    } else {
+                                        parentLabel.classList.add('selected');
+                                    }
+                                }
+                            });
+
+                            updateQuizProgress();
+                            showQuestionFeedback(index, Number(radio.value) === correctIndex, item.options[correctIndex]);
+                        });
+                        label.appendChild(radio);
+                        label.appendChild(document.createTextNode(` ${String.fromCharCode(65 + optionIndex)}. ${option}`));
+                        container.appendChild(label);
+                    });
+
+                    questionsDiv.appendChild(container);
+                });
+
+                quizCard.style.display = 'block';
+            } catch (error) {
+                const message = error && error.message ? error.message : 'Check your internet connection and try again.';
+                status.textContent = `Error loading quiz: ${message}`;
+                console.error('Quiz load error:', error);
+            }
+        }
+
+        function generateQuiz(text, count, topic = '', difficulty = 'medium') {
+            const config = getDifficultyConfig(difficulty);
+            const allSentences = text
+                .split(/[.!?]+/)
+                .map(s => s.trim())
+                .filter(Boolean);
+
+            let sentences = allSentences.filter(s => s.length >= config.minLength);
+            if (sentences.length < count) {
+                const fallbackMin = Math.max(config.minLength - 20, 25);
+                sentences = allSentences.filter(s => s.length >= fallbackMin);
+            }
+            if (sentences.length < count) {
+                const fallbackMin = Math.max(config.minLength - 35, 20);
+                sentences = allSentences.filter(s => s.length >= fallbackMin);
+            }
+
+            if (sentences.length === 0) {
+                return [];
+            }
+
+            const topicWords = getTopicWords(topic);
+            const history = getStoredQuestionHistory();
+            const historyKey = `${(topic || 'topic').toLowerCase().replace(/[^a-z0-9]+/g, '-')}:${difficulty}`;
+            const servedIds = new Set((history[historyKey] || []).filter(Boolean));
+            const candidates = [];
+
+            sentences.forEach((sentence, sentenceIndex) => {
+                const answer = getAnswerWord(sentence, topicWords);
+                if (!answer) {
+                    return;
+                }
+
+                const prompt = buildPrompt(sentence, answer, config);
+                const options = buildOptions(answer, topicWords, sentence, config);
+                const correctIndex = options.indexOf(answer);
+                const questionId = buildQuestionId(topic, difficulty, sentence, sentenceIndex);
+
+                if (correctIndex !== -1) {
+                    candidates.push({
+                        id: questionId,
+                        prompt,
+                        options,
+                        correctIndex
+                    });
+                }
+            });
+
+            const availableCandidates = candidates.filter(candidate => !servedIds.has(candidate.id));
+            const shouldResetHistory = availableCandidates.length === 0 && candidates.length > 0;
+            const pool = shouldResetHistory ? candidates : availableCandidates;
+            const shuffledPool = shuffle(pool);
+
+            const selected = [];
+            const selectedIds = new Set();
+            shuffledPool.forEach(candidate => {
+                if (selected.length >= count || selectedIds.has(candidate.id)) {
+                    return;
+                }
+                selected.push(candidate);
+                selectedIds.add(candidate.id);
+            });
+
+            if (selected.length === 0) {
+                return [];
+            }
+
+            if (shouldResetHistory) {
+                history[historyKey] = [];
+            }
+            history[historyKey] = [...new Set([...(history[historyKey] || []), ...selected.map(item => item.id)])];
+            saveQuestionHistory(history);
+
+            return selected.slice(0, count);
+        }
+
+        function resetQuiz() {
+            document.getElementById('questions').innerHTML = '';
+            document.getElementById('quizCard').style.display = 'none';
+            document.getElementById('resultCard').style.display = 'none';
+            document.getElementById('score').textContent = '';
+            document.getElementById('quizFeedback').classList.add('hidden-card');
+            document.getElementById('quizProgress').classList.add('hidden-card');
+            document.getElementById('quizProgressFill').style.width = '0%';
+            document.getElementById('quizProgressText').textContent = `Progress: 0 / 0`;
+            document.getElementById('status').textContent = 'Quiz reset. Enter a topic or load again.';
+            quizData = [];
+        }
+
+        function updateQuizProgress() {
+            const total = quizData.length;
+            const answered = Array.from(document.querySelectorAll('#questions input[type="radio"]'))
+                .reduce((count, input, index, inputs) => count + (input.checked ? 1 : 0), 0);
+            const answeredQuestions = new Set(Array.from(document.querySelectorAll('#questions input[type="radio"]'))
+                .filter(input => input.checked)
+                .map(input => input.name)).size;
+            const percent = total ? Math.round((answeredQuestions / total) * 100) : 0;
+            document.getElementById('quizProgressFill').style.width = `${percent}%`;
+            document.getElementById('quizProgressText').textContent = `Progress: ${answeredQuestions} / ${total}`;
+        }
+
+        function showQuestionFeedback(questionIndex, isCorrect, correctAnswer) {
+            const feedback = document.getElementById('quizFeedback');
+            feedback.classList.remove('hidden-card');
+            feedback.textContent = isCorrect
+                ? `Question ${questionIndex + 1}: Correct! Great choice.`
+                : `Question ${questionIndex + 1}: Incorrect. The correct answer was "${correctAnswer}".`;
+        }
+
+        function submitAnswers() {
+            let score = 0;
+            let answeredCount = 0;
+            quizData.forEach((item, index) => {
+                const selected = document.querySelector(`input[name='question_${index}']:checked`);
+                if (selected) {
+                    answeredCount++;
+                    if (Number(selected.value) === item.correctIndex) {
+                        score++;
+                    }
+                }
+            });
+
+            const resultCard = document.getElementById('resultCard');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultMessage = document.getElementById('resultMessage');
+            const scoreDiv = document.getElementById('score');
+
+            scoreDiv.textContent = `Your Score: ${score} / ${quizData.length}`;
+            resultCard.style.display = 'block';
+            resultTitle.textContent = 'Quiz Result';
+            if (answeredCount < quizData.length) {
+                resultMessage.textContent = `You answered ${answeredCount} of ${quizData.length} questions. Please select one answer for each question.`;
+            } else if (score === quizData.length) {
+                resultMessage.textContent = `Congratulations! You got all ${quizData.length} marks correct.`;
+            } else {
+                resultMessage.textContent = `You scored ${score} out of ${quizData.length}. Keep learning!`;
+            }
+        }
+    </script>
+</body>
+</html>
